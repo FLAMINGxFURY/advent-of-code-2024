@@ -11,6 +11,9 @@ fun main() {
 
 	val result = partOne(grid)
 	println(result)
+
+	val result2 = partTwo(grid)
+	println(result2)
 }
 
 fun partOne(grid: Array<CharArray>): Int {
@@ -119,5 +122,51 @@ fun partOne(grid: Array<CharArray>): Int {
 		}
 	}
 
+	return foundItems
+}
+
+fun partTwo(grid: Array<CharArray>) : Int {
+	var foundItems = 0
+
+	for (i in 0..<grid.size) {
+		for (j in 0..<grid[0].size) {
+			// diagonal positions that are possible for 'M' and 'S'
+			val topLeft = i - 1 to j - 1
+			val bottomRight = i + 1 to j + 1
+			val topRight = i - 1 to j + 1
+			val bottomLeft = i + 1 to j - 1
+
+			// if 'A' is found...
+			if (grid[i][j] == 'A') {
+				// Check top-left to bottom-right diagonal
+				if (topLeft.first in grid.indices && topLeft.second in grid[0].indices &&
+					bottomRight.first in grid.indices && bottomRight.second in grid[0].indices
+				) {
+					// Store which position is an 'M' and which is an 'S' (if any)
+					val topLeftChar = grid[topLeft.first][topLeft.second]
+					val bottomRightChar = grid[bottomRight.first][bottomRight.second]
+
+					// If those positions are valid for spelling "MAS"...
+					if ((topLeftChar == 'M' && bottomRightChar == 'S') ||
+						(topLeftChar == 'S' && bottomRightChar == 'M')
+					) {
+						// Check the other diagonal
+						if (topRight.first in grid.indices && topRight.second in grid[0].indices &&
+							bottomLeft.first in grid.indices && bottomLeft.second in grid[0].indices
+						) {
+							// Store which position is an 'M' and which is an 'S' (if any)
+							val topRightChar = grid[topRight.first][topRight.second]
+							val bottomLeftChar = grid[bottomLeft.first][bottomLeft.second]
+
+							// If we have spelled "MAS" in both diagonals, this is a valid X-MAS
+							if ((topRightChar == 'M' && bottomLeftChar == 'S') ||
+								(topRightChar == 'S' && bottomLeftChar == 'M')
+							) foundItems++
+						}
+					}
+				}
+			}
+		}
+	}
 	return foundItems
 }
