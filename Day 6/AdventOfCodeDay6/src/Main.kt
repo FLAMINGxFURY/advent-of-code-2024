@@ -97,7 +97,7 @@ fun getPath(grid: Array<CharArray>): Set<GuardPathNode> {
 
 	// guard moves in direction it's facing until it meets a wall ('#'). Then, it turns right.
 	val visited = mutableSetOf<GuardPathNode>()
-	visited += guardPos
+	visited += GuardPathNode(guardPos.x, guardPos.y, guardPos.direction)
 
 	// while the guard has not exited the grid...
 	while (guardPos.x >= 0 && guardPos.x < grid.size && guardPos.y >= 0 && guardPos.y < grid[0].size) {
@@ -154,13 +154,16 @@ fun detectCycle(grid: Array<CharArray>): Boolean {
 		if (guardPos.direction == upChar && grid[guardPos.x - 1][guardPos.y] == '#') {
 			guardPos.direction = rightChar
 			continue
-		} else if (guardPos.direction == downChar && grid[guardPos.x + 1][guardPos.y] == '#') {
+		}
+		else if (guardPos.direction == downChar && grid[guardPos.x + 1][guardPos.y] == '#') {
 			guardPos.direction = leftChar
 			continue
-		} else if (guardPos.direction == leftChar && grid[guardPos.x][guardPos.y - 1] == '#') {
+		}
+		else if (guardPos.direction == leftChar && grid[guardPos.x][guardPos.y - 1] == '#') {
 			guardPos.direction = upChar
 			continue
-		} else if (guardPos.direction == rightChar && grid[guardPos.x][guardPos.y + 1] == '#') {
+		}
+		else if (guardPos.direction == rightChar && grid[guardPos.x][guardPos.y + 1] == '#') {
 			guardPos.direction = downChar
 			continue
 		}
@@ -182,7 +185,7 @@ fun detectCycle(grid: Array<CharArray>): Boolean {
 		}
 
 		// if a GuardPathNode with the same x, y, and *direction* has been visited before, there is a cycle
-		if (visited.contains(GuardPathNode(guardPos.x, guardPos.y, guardPos.direction))) {
+		if ((visited.any { it.x == guardPos.x && it.y == guardPos.y && it.direction == guardPos.direction })) {
 			return true
 		}
 
@@ -197,39 +200,27 @@ fun detectCycle(grid: Array<CharArray>): Boolean {
 fun partTwo(grid: Array<CharArray>): Int {
 	val originalGrid = grid.map { it.copyOf() }.toTypedArray()
 
-	val originalPath = getPath(grid)
+	val startNode = findStart(grid)
 
 	// for each node visited, determine if placing a wall in front of the
 	// guard would cause the guard to begin walking in a loop. If so, increment loopCount
 	var loopCount = 0
-	for (node in originalPath) {
-		// if we are at the last node, break
-		if (node == originalPath.last()) {
-			break
-		}
 
-		// create a copy of the grid
-		val newGrid = originalGrid.map { it.copyOf() }.toTypedArray()
+	// Test each non-wall node in the grid to determine if placing a wall there would cause a loop
+	for (i in grid.indices) {
+		for (j in grid[i].indices) {
+			if (grid[i][j] == '#') continue
 
-		// place a wall in front of the guard
-		when (node.direction) {
-			upChar -> {
-				newGrid[node.x - 1][node.y] = '#'
-			}
-			downChar -> {
-				newGrid[node.x + 1][node.y] = '#'
-			}
-			leftChar -> {
-				newGrid[node.x][node.y - 1] = '#'
-			}
-			rightChar -> {
-				newGrid[node.x][node.y + 1] = '#'
-			}
-		}
+			// reset grid to original state
+			grid.forEachIndexed { index, chars -> originalGrid[index].copyInto(chars) }
 
-		// if a cycle is detected, increment loopCount
-		if (detectCycle(newGrid)) {
-			loopCount++
+			// place a wall at the current node
+			grid[i][j] = '#'
+
+			// if a cycle is detected, increment loopCount
+			if (detectCycle(grid)) {
+				loopCount++
+			}
 		}
 	}
 
