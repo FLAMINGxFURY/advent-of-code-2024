@@ -21,6 +21,10 @@ fun main() {
 fun add(a: Long, b: Long): Long = a + b
 fun mul(a: Long, b: Long): Long = a * b
 
+fun concat(a: Long, b: Long): Long {
+    return (a.toString() + b.toString()).toLong()
+}
+
 fun performCalculation(inputs: List<Long>, operations: List<((Long, Long) -> Long)>): Long {
     // starting with the first value...
     var result = inputs[0]
@@ -33,7 +37,7 @@ fun performCalculation(inputs: List<Long>, operations: List<((Long, Long) -> Lon
 }
 
 fun generateOps(numOps: Int): List<List<(Long, Long) -> Long>> {
-    val operations = listOf(::add, ::mul) // list of callable function references (::) for both ops
+    val operations = listOf(::add, ::mul, ::concat) // list of callable function references (::) for all ops
     val allCombinations = mutableListOf<List<(Long, Long) -> Long>>()
 
     fun backtrack(current: MutableList<(Long, Long) -> Long>, depth: Int) {
