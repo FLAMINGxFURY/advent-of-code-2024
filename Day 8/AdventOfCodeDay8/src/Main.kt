@@ -19,11 +19,12 @@ fun main() {
 		}
 	}
 
-	val result = partOne(grid, uniqueChars)
+	// val result = partOne(grid, uniqueChars)
+	val result = partTwo(grid, uniqueChars)
 	println(result)
 }
 
-fun partOne(grid: Array<CharArray>, uniqueChars: Set<Char>): Int {
+fun getPointMap(grid: Array<CharArray>, uniqueChars: Set<Char>): Map<Char, List<Pair<Int, Int>>> {
 	// For each unique character, find the location of each point
 	val locations = mutableMapOf<Char, MutableList<Pair<Int, Int>>>()
 	for (char in uniqueChars) {
@@ -36,6 +37,12 @@ fun partOne(grid: Array<CharArray>, uniqueChars: Set<Char>): Int {
 			}
 		}
 	}
+	return locations
+}
+
+fun partOne(grid: Array<CharArray>, uniqueChars: Set<Char>): Int {
+	// For each unique character, find the location of each point
+	val locations = getPointMap(grid, uniqueChars)
 
 	// Antinodes exist on both sides of a pair, the exact distance from each side that the pair has between them.
 	// For each pair, determine if:
@@ -68,6 +75,65 @@ fun partOne(grid: Array<CharArray>, uniqueChars: Set<Char>): Int {
 
 					// place antinode
 					antinodeLocations += antinode
+				}
+			}
+		}
+	}
+
+	return antinodeLocations.size
+}
+
+fun partTwo(grid: Array<CharArray>, uniqueChars: Set<Char>): Int {
+	// For each unique character, find the location of each point
+	val locations = getPointMap(grid, uniqueChars)
+
+	val antinodeLocations = mutableSetOf<Pair<Int, Int>>()
+
+	for ((char, pairs) in locations) {
+		// permute through all pairs of points
+		for (i in pairs.indices) {
+			for (j in i + 1..<pairs.size) {
+
+				// all points are now considered antinodes as well, so add them to the antinode locations
+				antinodeLocations += pairs[i]
+				antinodeLocations += pairs[j]
+
+				val point1 = pairs[i]
+				val point2 = pairs[j]
+
+				val xDist = point1.first - point2.first
+				val yDist = point1.second - point2.second
+
+				// The two antinodes must be placed xDist and yDist away from the two points,
+				// such that neither antinode is between the two points
+				var antinode1 = Pair(point1.first + xDist, point1.second + yDist)
+				var antinode2 = Pair(point2.first - xDist, point2.second - yDist)
+
+				// continue adding antinodes at the same distance until the antinode is outside the grid
+				while (true) {
+					// check if antinode is within the grid
+					if (antinode1.first < 0 || antinode1.first >= grid.size
+						|| antinode1.second < 0 || antinode1.second >= grid[0].size)
+						break
+
+					// place antinode
+					antinodeLocations += antinode1
+
+					// move antinode to the next location
+					antinode1 = Pair(antinode1.first + xDist, antinode1.second + yDist)
+				}
+
+				while (true) {
+					// check if antinode is within the grid
+					if (antinode2.first < 0 || antinode2.first >= grid.size
+						|| antinode2.second < 0 || antinode2.second >= grid[0].size)
+						break
+
+					// place antinode
+					antinodeLocations += antinode2
+
+					// move antinode to the next location
+					antinode2 = Pair(antinode2.first - xDist, antinode2.second - yDist)
 				}
 			}
 		}
