@@ -5,7 +5,7 @@ fun main() {
 	val reader = File("input.txt").bufferedReader()
 	val input = reader.readLine()
 
-	val result = partOne(input)
+	val result = partTwo(input)
 	println(result)
 }
 
@@ -18,8 +18,7 @@ fun checksum(values : List<Int>) : Long {
 	return sum
 }
 
-fun partOne(input: String): Long {
-	// create a mapping for the input string
+fun createInitialDisk(input: String) : MutableList<Int> {
 	val disk = mutableListOf<Int>()
 
 	var isFreeBlock = false
@@ -40,6 +39,12 @@ fun partOne(input: String): Long {
 		// toggle the flag
 		isFreeBlock = !isFreeBlock
 	}
+	return disk
+}
+
+fun partOne(input: String): Long {
+	// create a mapping for the input string
+	val disk = createInitialDisk(input)
 
 	// from back to front, place the nodes in the first available free space
 	// until the disk is contiguous
@@ -72,6 +77,66 @@ fun partOne(input: String): Long {
 				}
 			}
 		}
+	}
+	return checksum(disk)
+}
+
+fun partTwo(input: String): Long {
+	val disk = createInitialDisk(input)
+
+	// find the start and end indices of each file
+	val filePositions = mutableMapOf<Int, Pair<Int, Int>>()
+
+	var currentFile = disk[0]
+	var startIndex = 0
+
+	for (i in disk.indices) {
+		if (disk[i] != currentFile) {
+			// we reached a new file or free space block
+			if (currentFile != -1) {
+				filePositions[currentFile] = Pair(startIndex, i - 1)
+			}
+			currentFile = disk[i]
+			startIndex = i
+		}
+	}
+	// trailing file
+	if (currentFile != -1) {
+		filePositions[currentFile] = Pair(startIndex, disk.size - 1)
+	}
+
+	// from back to front, place consecutive blocks of the same node in the first
+	// block of free space where they will fit. If there is no appropriate block, do nothing.
+	// Never move a block to the right, only move blocks to the left.
+	val largestFileID = filePositions.keys.max()
+	for (fileID in largestFileID downTo 0) {
+		val (start, end) = filePositions[fileID] ?: continue
+		val length = end - start + 1
+
+		for (i in 0..<start) {
+			if (disk[i] == -1) {
+				// check if there is enough space to fit the file
+				var canFit = true
+				for (j in 0..<length) {
+					if (i + j >= disk.size || disk[i + j] != -1) {
+						canFit = false
+						break
+					}
+				}
+				if (canFit) {
+					// if we found a free space, move the file
+					for (k in 0..<length) {
+						disk[i + k] = fileID
+					}
+					// clear the old file
+					for (k in 0..<length) {
+						disk[start + k] = -1
+					}
+					break
+				}
+			}
+		}
+		println("$fileID done")
 	}
 	return checksum(disk)
 }
