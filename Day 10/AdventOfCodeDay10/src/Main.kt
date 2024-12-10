@@ -22,6 +22,6 @@ fun findZeroElevations(grid: Array<IntArray>): List<Pair<Int, Int>> {
 	return zeroElevations
 }
 
-fun partOne(grid: Array<CharArray>): Int {
+fun partOne(grid: Array<IntArray>): Int {
 	val zeroElevations = findZeroElevations(grid)
 }
