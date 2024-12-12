@@ -9,7 +9,7 @@ fun main() {
 	// convert grid to 2D array of integers
 	val grid = gridChars.map { it: CharArray -> it.map { it.toString().toInt() } }
 
-	val result = partOne(grid)
+	val result = partTwo(grid)
 	println(result)
 }
 
@@ -57,6 +57,37 @@ fun partOne(grid: List<List<Int>>): Int {
 			}
 		}
 		trailheadCount += foundNines.size
+	}
+	return trailheadCount
+}
+
+fun partTwo(grid: List<List<Int>>): Int {
+	val zeroElevations = findZeroElevations(grid)
+
+	var trailheadCount = 0
+
+	// from each 0, determine how many paths to a 9 are possible
+	for (zero in zeroElevations) {
+		val viableNodes = mutableListOf(zero)
+		while (viableNodes.isNotEmpty()) {
+			val current = viableNodes.removeAt(0)
+
+			// if the current node is a 9, increment the trailhead count
+			if (grid[current.first][current.second] == 9) {
+				trailheadCount++
+				continue
+			}
+			// walk all directions
+			val (x, y) = current
+			val neighbors = listOf(Pair(x - 1, y), Pair(x + 1, y), Pair(x, y - 1), Pair(x, y + 1))
+			for (neighbor in neighbors) {
+				if (neighbor.first in grid.indices && neighbor.second in grid[0].indices) {
+					if (canWalk(current, neighbor, grid)) {
+						viableNodes.add(neighbor)
+					}
+				}
+			}
+		}
 	}
 	return trailheadCount
 }
