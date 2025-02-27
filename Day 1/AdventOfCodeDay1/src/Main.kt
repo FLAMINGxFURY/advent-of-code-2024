@@ -17,7 +17,6 @@ fun main() {
 
     //partOne(firstValues, secondValues)
 
-    //lets add a funny little comment
     partTwo(firstValues, secondValues)
 }
 
